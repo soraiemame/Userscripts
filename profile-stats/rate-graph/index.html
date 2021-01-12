@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<!--<link rel="shortcut icon" type="image/x-icon" href="https://nenone.net/favicon.ico">-->
+	<title>AtCoder Rollback</title>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="https://img.atcoder.jp/public/7cd93c2/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="https://img.atcoder.jp/public/7cd93c2/css/base.css">
+	<script src="https://img.atcoder.jp/public/fc4b538/js/lib/jquery-1.9.1.min.js"></script>
+	<script src="https://img.atcoder.jp/public/fc4b538/js/lib/bootstrap.min.js"></script>
+	<script src="https://img.atcoder.jp/public/fc4b538/js/cdn/moment.min.js"></script>
+	<script src="https://img.atcoder.jp/public/fc4b538/js/cdn/moment_js-ja.js"></script>
+	<script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
+	<style type="text/css">
+		#content {
+			margin: 24px;
+		}
+
+		#user,
+		#date,
+		#submit {
+			padding: 4px;
+			margin: 8px;
+			border-radius: 4px;
+			border: 2px solid #bfbfbf;
+			outline: none;
+		}
+
+		#user:focus,
+		#date:focus,
+		#submit:focus {
+			box-shadow: 0 0 4px #7f7fff;
+		}
+	</style>
+	<link href="https://fonts.googleapis.com/css?family=Squada+One" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+	<div id="content">
+		<h2 id="head">AtCoder Rollback</h2>
+		<form action="index.html" method="GET">
+			<input type="text" name="user" id="user" spellcheck="false"><br>
+			<input type="date" name="date" id="date"><br>
+			<input type="submit" id="submit" value="Submit"><br>
+		</form>
+		<canvas id="ratingStatus" width="640" height="80"></canvas><br>
+		<canvas id="ratingGraph" width="640" height="360"></canvas><br>
+		<a id="tweet">Share by Tweet</a>
+	</div>
+
+	<script type="text/javascript">
+		const proxy = "https://1d878d9b.us-south.apigw.appdomain.cloud/proxy?url=";
+		function ajax(url, success) {
+			let req = new XMLHttpRequest();
+			req.onload = (function () {
+				success(JSON.parse(req.response.response));
+			});
+			req.open("GET", proxy + url);
+			req.responseType = "json";
+			req.send();
+		}
+		let rating_history = [];
+		function reload() {
+			rating_history = [];
+			user = document.getElementById("user").value;
+			date = new Date(document.getElementById("date").value).getTime();
+			document.getElementById("head").textContent = user + "さんの" + document.getElementById("date").value + "時点でのレーティンググラフ";
+			ajax("https://atcoder.jp/users/" + user + "/history/json", function (res) {
+				for (let i in res) {
+					const contest = res[i];
+					const d = new Date(contest.EndTime);
+					if (contest.IsRated == true && d <= date) {
+						contest.EndTime = d.getTime() / 1000;
+						contest.StandingsUrl = "https://" + contest.ContestScreenName + "/standings/?watching=" + user;
+						rating_history.push(contest);
+					}
+				}
+				let script = document.createElement('script');
+				//script.src = './rating-graph.js';
+				script.src = "./code.js";
+				document.body.appendChild(script);
+				let tweetText = document.getElementById("head").textContent + "\n" + location.href + " #AtCoderRollback";
+				document.getElementById("tweet").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetText);
+			});
+		};
+		window.addEventListener("load", () => {
+			let q = location.search.slice(1).split('&');
+			if (q.length >= 2) {
+				document.getElementById("user").value = q[0].split('=')[1];
+				document.getElementById("date").value = q[1].split('=')[1];
+				reload();
+			}
+			let tweetText = location.href + " #AtCoderRollback";
+			document.getElementById("tweet").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetText);
+		});
+	</script>
+
+</body>
+
+</html>
