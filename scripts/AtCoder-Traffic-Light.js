@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AtCoder Traffic Light
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      1.0
 // @description  AtCoderの問題のページから直接解説のページに行くことができます。
 //               問題横のボタンが赤の場合:読み込み中です待っていてください。
 //               問題横のボタンが黄の場合:全体解説のみありました。
